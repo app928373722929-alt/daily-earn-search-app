@@ -1,58 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const db = require('./db'); // সরাসরি ডাটাবেস ইম্পোর্ট
 
-// Database instance
-const db = require('../server').db;
-
-// Request withdrawal
-router.post('/request', async (req, res) => {
-    const { userId, amount, binanceUid } = req.body;
-
-    try {
-        // Check user balance
-        const user = await getUser(userId);
-        if (!user) {
-            return res.json({ success: false, error: 'User not found' });
-        }
-
-        if (user.coins < amount) {
-            return res.json({ success: false, error: 'Insufficient balance' });
-        }
-
-        if (amount < 1000) {
-            return res.json({ success: false, error: 'Minimum withdrawal: 1000 coins' });
-        }
-
-        // Create payment request
-        const paymentId = await createPaymentRequest(userId, amount, binanceUid);
-        
-        // Deduct coins from user
-        await updateUserCoins(userId, -amount);
-        
-        res.json({
-            success: true,
-            message: 'Withdrawal request submitted successfully',
-            paymentId: paymentId
-        });
-
-    } catch (error) {
-        res.json({ success: false, error: error.message });
-    }
-});
-
-// Get payment history for user
-router.get('/history/:userId', async (req, res) => {
-    const userId = req.params.userId;
-    
-    try {
-        const history = await getPaymentHistory(userId);
-        res.json({ success: true, history: history });
-    } catch (error) {
-        res.json({ success: false, error: error.message });
-    }
-});
-
-// Database functions
+// ডাটাবেস ফাংশনগুলো
 function getUser(userId) {
     return new Promise((resolve, reject) => {
         db.get('SELECT * FROM users WHERE telegram_id = ?', [userId], (err, row) => {
@@ -65,7 +15,7 @@ function getUser(userId) {
 function updateUserCoins(userId, coins) {
     return new Promise((resolve, reject) => {
         db.run(
-            'UPDATE users SET coins = coins + ? WHERE telegram_id = ?',
+            'UPDATE users SET balance = balance + ? WHERE telegram_id = ?',
             [coins, userId],
             (err) => {
                 if (err) reject(err);
@@ -102,5 +52,61 @@ function getPaymentHistory(userId) {
         );
     });
 }
+
+// উইথড্রয়াল রিকোয়েস্ট করুন
+router.post('/request', async (req, res) => {
+    const { userId, amount, binanceUid } = req.body;
+
+    if (!userId || !amount || !binanceUid) {
+        return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+
+    try {
+        // ইউজার ব্যালেন্স চেক করুন
+        const user = await getUser(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        if (user.balance < amount) {
+            return res.status(400).json({ success: false, error: 'Insufficient balance' });
+        }
+
+        if (amount < 1000) {
+            return res.status(400).json({ success: false, error: 'Minimum withdrawal: 1000 coins' });
+        }
+
+        // পেমেন্ট রিকোয়েস্ট তৈরি করুন
+        const paymentId = await createPaymentRequest(userId, amount, binanceUid);
+        
+        // ইউজার থেকে কয়েন কাটুন
+        await updateUserCoins(userId, -amount);
+        
+        res.json({
+            success: true,
+            message: 'Withdrawal request submitted successfully',
+            paymentId: paymentId
+        });
+
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ইউজারের পেমেন্ট হিস্ট্রি পান
+router.get('/history/:userId', async (req, res) => {
+    const userId = req.params.userId;
+    
+    if (!userId) {
+        return res.status(400).json({ success: false, error: 'User ID is required' });
+    }
+    
+    try {
+        const history = await getPaymentHistory(userId);
+        res.json({ success: true, history: history });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 
 module.exports = router;
