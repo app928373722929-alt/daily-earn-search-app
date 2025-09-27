@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Daily Earn App</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Header -->
+        <header class="admin-header">
+            <h1>🔧 Daily Earn Admin Panel</h1>
+            <div class="admin-info">
+                <div class="user-welcome">Welcome, Admin!</div>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <!-- Stats Overview -->
+        <section class="stats-overview">
+            <h2>📊 System Overview</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <h3>Total Users</h3>
+                        <p id="totalUsers">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-info">
+                        <h3>Total Coins</h3>
+                        <p id="totalCoins">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-info">
+                        <h3>Total Earned</h3>
+                        <p id="totalEarned">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-info">
+                        <h3>Pending Payments</h3>
+                        <p id="pendingPayments">0</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation Tabs -->
+        <nav class="admin-nav">
+            <button class="nav-btn active" onclick="showTab('payments')">💳 Payment Requests</button>
+            <button class="nav-btn" onclick="showTab('users')">👥 All Users</button>
+            <button class="nav-btn" onclick="showTab('history')">📋 Payment History</button>
+            <button class="nav-btn" onclick="showTab('stats')">📊 Statistics</button>
+        </nav>
+
+        <!-- Payments Tab -->
+        <section id="payments-tab" class="tab-content active">
+            <div class="tab-header">
+                <h2>💳 Pending Payment Requests</h2>
+                <button class="btn-refresh" onclick="loadPendingPayments()">🔄 Refresh</button>
+            </div>
+            <div class="search-box">
+                <input type="text" id="searchPayment" placeholder="Search by user ID or name..." onkeyup="filterPayments()">
+            </div>
+            <div id="paymentsList" class="payments-list">
+                <!-- Payments will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Users Tab -->
+        <section id="users-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>👥 All Users</h2>
+                <button class="btn-refresh" onclick="loadAllUsers()">🔄 Refresh</button>
+            </div>
+            <div class="users-grid" id="usersList">
+                <!-- Users will be loaded here -->
+            </div>
+        </section>
+
+        <!-- History Tab -->
+        <section id="history-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>📋 Payment History</h2>
+                <button class="btn-refresh" onclick="loadPaymentHistory()">🔄 Refresh</button>
+            </div>
+            <div class="history-list" id="paymentHistory">
+                <!-- History will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Statistics Tab -->
+        <section id="stats-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>📊 Detailed Statistics</h2>
+                <button class="btn-refresh" onclick="loadDetailedStats()">🔄 Refresh</button>
+            </div>
+            <div class="stats-details" id="statsDetails">
+                <!-- Statistics will be loaded here -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePaymentModal()">&times;</span>
+            <h3>💰 Process Payment</h3>
+            <div id="paymentDetails">
+                <!-- Payment details will be loaded here -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn-success" onclick="markAsPaid()">✅ Mark as Paid</button>
+                <button class="btn-cancel" onclick="closePaymentModal()">❌ Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Details Modal -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeUserModal()">&times;</span>
+            <div id="userDetails">
+                <!-- User details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
