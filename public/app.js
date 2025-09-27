@@ -4,6 +4,7 @@ class DailyEarnApp {
         this.user = this.tg.initDataUnsafe?.user;
         this.userData = null;
         this.searchCount = 0;
+        this.gameCount = 0;
         this.init();
     }
 
@@ -14,7 +15,9 @@ class DailyEarnApp {
         if (this.user) {
             await this.loadUserData();
             await this.loadPopularSearches();
+            await this.loadGameStats();
             this.setupDailyWelcome();
+            this.setupEventListeners();
         }
     }
 
@@ -36,6 +39,19 @@ class DailyEarnApp {
             }
         } catch (error) {
             console.error('Error loading user data:', error);
+        }
+    }
+
+    async loadGameStats() {
+        try {
+            const response = await fetch(`/api/games/stats/${this.user.id}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                this.updateGameStats(data.stats);
+            }
+        } catch (error) {
+            console.error('Error loading game stats:', error);
         }
     }
 
@@ -65,7 +81,7 @@ class DailyEarnApp {
                 this.updateSearchProgress();
                 this.showSearchResults(result);
                 this.showCoinsAnimation(result.coinsEarned);
-                await this.loadUserData(); // Refresh balance
+                await this.loadUserData();
             } else {
                 this.showError(result.error);
             }
@@ -79,16 +95,17 @@ class DailyEarnApp {
         const resultsHTML = `
             <div class="search-success">
                 <h3>✅ Search Successful!</h3>
-                <p>You earned <strong>${result.coinsEarned} coins</strong></p>
+                <p>You earned <strong>${result.coinsEarned} coins</strong> for ${result.category} search</p>
                 <div class="search-results">
                     ${result.results.map(item => `
                         <div class="result-item">
                             <strong>${item.title}</strong>
-                            <span>${item.value}</span>
+                            <span class="value">${item.value}</span>
                             <small>${item.detail}</small>
                         </div>
                     `).join('')}
                 </div>
+                <button class="btn-close" onclick="closeResults()">Continue Searching</button>
             </div>
         `;
 
@@ -102,8 +119,7 @@ class DailyEarnApp {
             const data = await response.json();
             
             if (data.success) {
-                // Popular searches are already in HTML
-                console.log('Popular searches loaded:', data.popular);
+                console.log('Popular searches loaded');
             }
         } catch (error) {
             console.error('Error loading popular searches:', error);
@@ -112,9 +128,27 @@ class DailyEarnApp {
 
     updateUI() {
         if (this.userData) {
-            document.getElementById('userCoins').textContent = this.userData.coins;
-            document.getElementById('streakDays').textContent = this.userData.daily_streak;
+            document.getElementById('userCoins').textContent = this.userData.coins.toLocaleString();
+            document.getElementById('streakDays').textContent = this.userData.daily_streak || 0;
+            
+            // Update streak progress
+            const streakProgress = document.getElementById('streakProgress');
+            streakProgress.value = this.userData.daily_streak || 0;
+            
+            if (this.userData.daily_streak >= 3) {
+                document.getElementById('streakRewardBtn').disabled = false;
+            }
         }
+    }
+
+    updateGameStats(stats) {
+        stats.forEach(stat => {
+            if (stat.game_type === 'clicker') {
+                document.getElementById('clickerHighScore').textContent = stat.high_score || 0;
+            } else if (stat.game_type === 'typing') {
+                document.getElementById('typingHighScore').textContent = stat.high_score || 0;
+            }
+        });
     }
 
     updateSearchProgress() {
@@ -122,7 +156,48 @@ class DailyEarnApp {
         progress.value = this.searchCount;
         
         if (this.searchCount >= 5) {
-            document.querySelector('[onclick="claimReward(\'search\')"]').disabled = false;
+            document.getElementById('searchRewardBtn').disabled = false;
+        }
+    }
+
+    updateGameProgress() {
+        this.gameCount++;
+        const progress = document.getElementById('gameProgress');
+        progress.value = this.gameCount;
+        
+        if (this.gameCount >= 2) {
+            document.getElementById('gameRewardBtn').disabled = false;
+        }
+    }
+
+    async claimReward(type) {
+        const rewards = {
+            search: { coins: 25, message: 'Search mission completed!' },
+            games: { coins: 20, message: 'Game mission completed!' },
+            streak: { coins: 50, message: '3-day streak achieved!' }
+        };
+
+        const reward = rewards[type];
+        if (!reward) return;
+
+        try {
+            const response = await fetch('/api/users/update-coins', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: this.user.id,
+                    coins: reward.coins
+                })
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                this.showSuccess(reward.message + ` +${reward.coins} coins!`);
+                await this.loadUserData();
+            }
+        } catch (error) {
+            this.showError('Failed to claim reward');
         }
     }
 
@@ -145,6 +220,14 @@ class DailyEarnApp {
 
     hideLoading() {
         this.tg.closePopup();
+    }
+
+    showSuccess(message) {
+        this.tg.showPopup({
+            title: '✅ Success',
+            message: message,
+            buttons: [{ type: 'default', text: 'OK' }]
+        });
     }
 
     showError(message) {
@@ -173,9 +256,24 @@ class DailyEarnApp {
             });
         }, 1500);
     }
+
+    setupEventListeners() {
+        // Enter key for search
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.performSearch(e.target.value);
+            }
+        });
+    }
 }
 
 // Global functions
+function handleKeyPress(event) {
+    if (event.key === 'Enter') {
+        performSearch();
+    }
+}
+
 function performSearch() {
     const query = document.getElementById('searchInput').value;
     if (window.app) {
@@ -200,17 +298,43 @@ function closeWithdrawal() {
     document.getElementById('withdrawalModal').style.display = 'none';
 }
 
+function openService(service) {
+    quickSearch(service + ' today');
+}
+
+function showComingSoon() {
+    if (window.app) {
+        window.app.showError('This game is coming soon!');
+    }
+}
+
+function claimReward(type) {
+    if (window.app) {
+        window.app.claimReward(type);
+    }
+}
+
 async function requestWithdrawal() {
     const amount = parseInt(document.getElementById('withdrawAmount').value);
-    const uid = document.getElementById('binanceUid').value;
+    const uid = document.getElementById('binanceUid').value.trim();
 
-    if (amount < 1000) {
-        alert('Minimum withdrawal: 1000 coins');
+    if (!amount || amount < 1000) {
+        alert('Minimum withdrawal: 1000 coins ($1)');
         return;
     }
 
     if (!uid) {
         alert('Please enter your Binance UID');
+        return;
+    }
+
+    if (!window.app || !window.app.userData) {
+        alert('Please wait, loading user data...');
+        return;
+    }
+
+    if (amount > window.app.userData.coins) {
+        alert('Insufficient balance');
         return;
     }
 
