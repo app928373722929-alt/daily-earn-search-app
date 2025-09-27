@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const db = require('./db'); // ডাটাবেস ইম্পোর্ট যোগ করুন
 
-// Popular search categories that people search daily
+// পপুলার সার্চ ক্যাটেগরিস
 const SEARCH_CATEGORIES = {
     'crypto': {
         name: 'Cryptocurrency Prices',
@@ -45,49 +46,34 @@ const SEARCH_CATEGORIES = {
     }
 };
 
-// Process search and earn coins
-router.post('/earn', async (req, res) => {
-    const { userId, query } = req.body;
+// ডাটাবেস ফাংশনগুলো
+function recordSearch(userId, query, category, coinsEarned) {
+    return new Promise((resolve, reject) => {
+        db.run(
+            `INSERT INTO searches (user_id, query, category, coins_earned) 
+             VALUES ((SELECT id FROM users WHERE telegram_id = ?), ?, ?, ?)`,
+            [userId, query, category, coinsEarned],
+            function(err) {
+                if (err) reject(err);
+                else resolve(this.lastID);
+            }
+        );
+    });
+}
 
-    try {
-        // Detect category
-        const category = detectCategory(query);
-        const coinsEarned = SEARCH_CATEGORIES[category]?.coins || 2;
-
-        // Record search
-        await recordSearch(userId, query, category, coinsEarned);
-
-        // Update user coins
-        await updateUserCoins(userId, coinsEarned);
-
-        // Get search results (simulated)
-        const searchResults = await getSearchResults(query, category);
-
-        res.json({
-            success: true,
-            coinsEarned: coinsEarned,
-            category: category,
-            results: searchResults,
-            message: `You earned ${coinsEarned} coins for searching!`
-        });
-
-    } catch (error) {
-        res.json({ success: false, error: error.message });
-    }
-});
-
-// Get daily popular searches
-router.get('/popular', (req, res) => {
-    const popularSearches = [
-        { query: 'Bitcoin price today', category: 'crypto', coins: 3 },
-        { query: 'Weather in Dhaka', category: 'weather', coins: 2 },
-        { query: 'Latest cricket scores', category: 'sports', coins: 3 },
-        { query: 'New movie releases', category: 'movies', coins: 3 },
-        { query: 'iPhone price Bangladesh', category: 'shopping', coins: 3 }
-    ];
-
-    res.json({ success: true, popular: popularSearches });
-});
+function updateUserCoins(userId, coins) {
+    return new Promise((resolve, reject) => {
+        db.run(
+            `UPDATE users SET balance = balance + ?, total_earnings = total_earnings + ?, 
+             last_active = CURRENT_TIMESTAMP WHERE telegram_id = ?`,
+            [coins, coins, userId],
+            (err) => {
+                if (err) reject(err);
+                else resolve();
+            }
+        );
+    });
+}
 
 function detectCategory(query) {
     const lowerQuery = query.toLowerCase();
@@ -100,34 +86,8 @@ function detectCategory(query) {
     return 'general';
 }
 
-async function recordSearch(userId, query, category, coinsEarned) {
-    return new Promise((resolve, reject) => {
-        db.run(
-            `INSERT INTO searches (user_id, query, category, coins_earned) VALUES (?, ?, ?, ?)`,
-            [userId, query, category, coinsEarned],
-            function(err) {
-                if (err) reject(err);
-                else resolve(this.lastID);
-            }
-        );
-    });
-}
-
-async function updateUserCoins(userId, coins) {
-    return new Promise((resolve, reject) => {
-        db.run(
-            `UPDATE users SET coins = coins + ?, total_earned = total_earned + ?, last_active = CURRENT_TIMESTAMP WHERE telegram_id = ?`,
-            [coins, coins, userId],
-            (err) => {
-                if (err) reject(err);
-                else resolve();
-            }
-        );
-    });
-}
-
-async function getSearchResults(query, category) {
-    // Simulated search results based on category
+function getSearchResults(query, category) {
+    // সিমুলেটেড সার্চ রেজাল্ট
     const results = {
         crypto: [
             { title: 'Bitcoin (BTC) Price', value: '$42,150', change: '+2.5%' },
@@ -146,7 +106,55 @@ async function getSearchResults(query, category) {
         ]
     };
 
-    return results[category] || [{ title: 'Search Results', value: 'Information', detail: 'Relevant data' }];
+    return Promise.resolve(results[category] || [{ title: 'Search Results', value: 'Information', detail: 'Relevant data' }]);
 }
+
+// সার্চ করে কয়েন আর্ন করুন
+router.post('/earn', async (req, res) => {
+    const { userId, query } = req.body;
+
+    if (!userId || !query) {
+        return res.status(400).json({ success: false, error: 'User ID and query are required' });
+    }
+
+    try {
+        // ক্যাটেগরি ডিটেক্ট করুন
+        const category = detectCategory(query);
+        const coinsEarned = SEARCH_CATEGORIES[category]?.coins || 2;
+
+        // সার্চ রেকর্ড করুন
+        await recordSearch(userId, query, category, coinsEarned);
+
+        // ইউজার কয়েন আপডেট করুন
+        await updateUserCoins(userId, coinsEarned);
+
+        // সার্চ রেজাল্ট পান
+        const searchResults = await getSearchResults(query, category);
+
+        res.json({
+            success: true,
+            coinsEarned: coinsEarned,
+            category: category,
+            results: searchResults,
+            message: `You earned ${coinsEarned} coins for searching!`
+        });
+
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ডেইলি পপুলার সার্চেস পান
+router.get('/popular', (req, res) => {
+    const popularSearches = [
+        { query: 'Bitcoin price today', category: 'crypto', coins: 3 },
+        { query: 'Weather in Dhaka', category: 'weather', coins: 2 },
+        { query: 'Latest cricket scores', category: 'sports', coins: 3 },
+        { query: 'New movie releases', category: 'movies', coins: 3 },
+        { query: 'iPhone price Bangladesh', category: 'shopping', coins: 3 }
+    ];
+
+    res.json({ success: true, popular: popularSearches });
+});
 
 module.exports = router;
