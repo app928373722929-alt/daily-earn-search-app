@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
+// Database instance
+const db = require('../server').db;
+
 // Get user data
 router.post('/data', async (req, res) => {
     const { userId, userData } = req.body;
@@ -28,7 +31,8 @@ router.post('/update-coins', async (req, res) => {
 
     try {
         await updateUserCoins(userId, coins);
-        res.json({ success: true, message: 'Coins updated' });
+        const user = await getUser(userId);
+        res.json({ success: true, user: user });
     } catch (error) {
         res.json({ success: false, error: error.message });
     }
@@ -49,16 +53,16 @@ function createUser(userId, userData) {
         db.run(
             `INSERT INTO users (telegram_id, username, first_name, last_name, coins, total_earned, daily_streak, last_active) 
              VALUES (?, ?, ?, ?, 0, 0, 0, CURRENT_TIMESTAMP)`,
-            [userId, userData.username, userData.first_name, userData.last_name],
+            [userId, userData?.username, userData?.first_name, userData?.last_name],
             function(err) {
                 if (err) reject(err);
-                else resolve({
-                    telegram_id: userId,
-                    username: userData.username,
-                    first_name: userData.first_name,
-                    coins: 0,
-                    daily_streak: 0
-                });
+                else {
+                    // Return the created user
+                    db.get('SELECT * FROM users WHERE telegram_id = ?', [userId], (err, row) => {
+                        if (err) reject(err);
+                        else resolve(row);
+                    });
+                }
             }
         );
     });
