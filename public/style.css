@@ -9,6 +9,7 @@ body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     min-height: 100vh;
+    line-height: 1.6;
 }
 
 .container {
@@ -17,34 +18,43 @@ body {
     padding: 20px;
 }
 
+/* Header Styles */
 .header {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
 }
 
 .user-info h1 {
     font-size: 24px;
     margin-bottom: 10px;
+    color: #fff;
 }
 
 .balance {
-    font-size: 28px;
+    font-size: 32px;
     font-weight: bold;
+    margin-bottom: 8px;
 }
 
 .streak {
-    background: rgba(255,255,255,0.2);
-    padding: 5px 10px;
-    border-radius: 15px;
+    background: rgba(255, 165, 0, 0.3);
+    padding: 6px 12px;
+    border-radius: 20px;
     font-size: 14px;
-    margin-top: 5px;
+    display: inline-block;
 }
 
+/* Search Section */
 .search-section {
-    background: rgba(255,255,255,0.1);
-    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
     border-radius: 15px;
     margin-bottom: 20px;
+    backdrop-filter: blur(10px);
 }
 
 .search-box {
@@ -55,23 +65,37 @@ body {
 
 .search-box input {
     flex: 1;
-    padding: 12px;
+    padding: 14px;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 16px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+}
+
+.search-box input::placeholder {
+    color: #666;
 }
 
 .search-box button {
     background: #4CAF50;
     color: white;
     border: none;
-    padding: 12px 15px;
-    border-radius: 10px;
+    padding: 14px 20px;
+    border-radius: 12px;
     cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.search-box button:hover {
+    background: #45a049;
 }
 
 .quick-searches h4 {
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    font-size: 16px;
+    color: #e0e0e0;
 }
 
 .quick-search-tags {
@@ -81,73 +105,194 @@ body {
 }
 
 .quick-search-tags span {
-    background: rgba(255,255,255,0.2);
-    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 14px;
     border-radius: 20px;
     font-size: 12px;
     cursor: pointer;
     transition: all 0.3s;
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .quick-search-tags span:hover {
-    background: rgba(255,255,255,0.3);
-}
-
-.services-grid, .games-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin: 15px 0;
-}
-
-.service-card, .game-card {
-    background: rgba(255,255,255,0.1);
-    padding: 15px;
-    border-radius: 10px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.service-card:hover, .game-card:hover {
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.3);
     transform: translateY(-2px);
 }
 
+/* Services Grid */
+.services-section {
+    margin-bottom: 25px;
+}
+
+.services-section h3 {
+    margin-bottom: 15px;
+    font-size: 20px;
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.service-card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.service-card:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+}
+
 .service-icon {
-    font-size: 24px;
-    margin-bottom: 5px;
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.service-card span {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.service-card small {
+    font-size: 12px;
+    color: #ccc;
+}
+
+/* Games Section */
+.games-section {
+    margin-bottom: 25px;
+}
+
+.games-section h3 {
+    margin-bottom: 15px;
+    font-size: 20px;
+}
+
+.games-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.game-card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.game-card:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+}
+
+.game-card h4 {
+    margin-bottom: 6px;
+    font-size: 16px;
+}
+
+.game-card p {
+    font-size: 14px;
+    color: #ccc;
+    margin-bottom: 8px;
+}
+
+.game-stats {
+    font-size: 12px;
+    color: #ffd700;
+}
+
+/* Challenges Section */
+.challenges-section {
+    margin-bottom: 25px;
+}
+
+.challenges-section h3 {
+    margin-bottom: 15px;
+    font-size: 20px;
 }
 
 .challenges-list {
-    background: rgba(255,255,255,0.1);
-    padding: 15px;
-    border-radius: 10px;
-    margin: 15px 0;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 18px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
 }
 
 .challenge {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 10px 0;
-    padding: 10px;
-    background: rgba(255,255,255,0.05);
+    margin: 12px 0;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
 }
 
-.withdraw-btn {
-    width: 100%;
-    background: #FF6B6B;
-    color: white;
-    border: none;
-    padding: 15px;
-    border-radius: 10px;
-    font-size: 18px;
-    cursor: pointer;
-    margin-top: 20px;
+.challenge progress {
+    flex: 1;
+    margin: 0 12px;
+    height: 8px;
+    border-radius: 4px;
 }
 
+.challenge button {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.challenge button:disabled {
+    background: #666;
+    cursor: not-allowed;
+}
+
+/* Withdrawal Section */
+.withdrawal-section {
+    text-align: center;
+}
+
+.withdraw-btn {
+    background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+    color: white;
+    border: none;
+    padding: 16px 30px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s;
+    margin-bottom: 10px;
+}
+
+.withdraw-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+}
+
+.withdraw-info {
+    font-size: 12px;
+    color: #ccc;
+}
+
+/* Modal Styles */
 .modal {
     display: none;
     position: fixed;
@@ -155,28 +300,198 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    backdrop-filter: blur(5px);
 }
 
 .modal-content {
     background: white;
     color: #333;
     margin: 10% auto;
-    padding: 20px;
+    padding: 25px;
     border-radius: 15px;
     width: 90%;
     max-width: 400px;
     position: relative;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
 .close {
     position: absolute;
-    right: 15px;
-    top: 10px;
-    font-size: 24px;
+    right: 20px;
+    top: 15px;
+    font-size: 28px;
+    cursor: pointer;
+    color: #666;
+}
+
+.close:hover {
+    color: #333;
+}
+
+/* Search Results */
+.search-success {
+    text-align: center;
+}
+
+.search-success h3 {
+    color: #4CAF50;
+    margin-bottom: 10px;
+}
+
+.search-results {
+    margin: 20px 0;
+}
+
+.result-item {
+    background: #f5f5f5;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.result-item strong {
+    display: block;
+    color: #333;
+}
+
+.result-item .value {
+    font-size: 18px;
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+.result-item small {
+    color: #666;
+}
+
+.btn-close {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* Withdrawal Form */
+.withdrawal-form .form-group {
+    margin-bottom: 18px;
+}
+
+.withdrawal-form label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+    color: #333;
+}
+
+.withdrawal-form input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.withdrawal-form small {
+    color: #666;
+    font-size: 12px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.btn-cancel {
+    flex: 1;
+    background: #666;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
     cursor: pointer;
 }
 
+.btn-confirm {
+    flex: 1;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Game Styles */
+#gameContainer {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    z-index: 2000;
+    padding: 20px;
+}
+
+.game-screen {
+    max-width: 400px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.game-header h3 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.game-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.click-target {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 30px;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 20px 0;
+    transition: transform 0.1s;
+}
+
+.click-target:active {
+    transform: scale(0.95);
+}
+
+.btn-exit {
+    background: #666;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+/* Animations */
 .coins-animation {
     position: fixed;
     top: 50%;
@@ -186,10 +501,52 @@ body {
     font-weight: bold;
     animation: floatUp 2s ease-in-out;
     z-index: 1000;
+    background: rgba(255, 215, 0, 0.9);
+    padding: 10px 20px;
+    border-radius: 20px;
+}
+
+.click-animation, .typing-animation {
+    position: absolute;
+    font-size: 16px;
+    font-weight: bold;
+    animation: floatUp 1s ease-in-out;
+    color: #ffd700;
 }
 
 @keyframes floatUp {
-    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-    50% { transform: translate(-50%, -100%) scale(1.2); opacity: 1; }
-    100% { transform: translate(-50%, -150%) scale(0); opacity: 0; }
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-50px) scale(0.5);
+        opacity: 0;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .services-grid,
+    .games-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .search-box {
+        flex-direction: column;
+    }
+    
+    .challenge {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .challenge progress {
+        margin: 10px 0;
+        width: 100%;
+    }
 }
