@@ -54,10 +54,10 @@
 
         <!-- Navigation Tabs -->
         <nav class="admin-nav">
-            <button class="nav-btn active" onclick="showTab('payments')">💳 Payment Requests</button>
-            <button class="nav-btn" onclick="showTab('users')">👥 All Users</button>
-            <button class="nav-btn" onclick="showTab('history')">📋 Payment History</button>
-            <button class="nav-btn" onclick="showTab('stats')">📊 Statistics</button>
+            <button class="nav-btn active" onclick="showTab('payments', event)">💳 Payment Requests</button>
+            <button class="nav-btn" onclick="showTab('users', event)">👥 All Users</button>
+            <button class="nav-btn" onclick="showTab('history', event)">📋 Payment History</button>
+            <button class="nav-btn" onclick="showTab('stats', event)">📊 Statistics</button>
         </nav>
 
         <!-- Payments Tab -->
@@ -67,10 +67,10 @@
                 <button class="btn-refresh" onclick="loadPendingPayments()">🔄 Refresh</button>
             </div>
             <div class="search-box">
-                <input type="text" id="searchPayment" placeholder="Search by user ID or name..." onkeyup="filterPayments()">
+                <input type="text" id="searchPayment" placeholder="Search by user ID or name..." onkeyup="admin.filterPayments()">
             </div>
             <div id="paymentsList" class="payments-list">
-                <!-- Payments will be loaded here -->
+                <div class="loading">⏳ Loading payments...</div>
             </div>
         </section>
 
@@ -81,7 +81,7 @@
                 <button class="btn-refresh" onclick="loadAllUsers()">🔄 Refresh</button>
             </div>
             <div class="users-grid" id="usersList">
-                <!-- Users will be loaded here -->
+                <div class="loading">⏳ Loading users...</div>
             </div>
         </section>
 
@@ -92,7 +92,7 @@
                 <button class="btn-refresh" onclick="loadPaymentHistory()">🔄 Refresh</button>
             </div>
             <div class="history-list" id="paymentHistory">
-                <!-- History will be loaded here -->
+                <div class="loading">⏳ Loading history...</div>
             </div>
         </section>
 
@@ -103,7 +103,7 @@
                 <button class="btn-refresh" onclick="loadDetailedStats()">🔄 Refresh</button>
             </div>
             <div class="stats-details" id="statsDetails">
-                <!-- Statistics will be loaded here -->
+                <div class="loading">⏳ Loading statistics...</div>
             </div>
         </section>
     </div>
