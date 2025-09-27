@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
+// Database instance
+const db = require('../server').db;
+
 // Request withdrawal
 router.post('/request', async (req, res) => {
     const { userId, amount, binanceUid } = req.body;
@@ -8,7 +11,11 @@ router.post('/request', async (req, res) => {
     try {
         // Check user balance
         const user = await getUser(userId);
-        if (!user || user.coins < amount) {
+        if (!user) {
+            return res.json({ success: false, error: 'User not found' });
+        }
+
+        if (user.coins < amount) {
             return res.json({ success: false, error: 'Insufficient balance' });
         }
 
@@ -18,6 +25,9 @@ router.post('/request', async (req, res) => {
 
         // Create payment request
         const paymentId = await createPaymentRequest(userId, amount, binanceUid);
+        
+        // Deduct coins from user
+        await updateUserCoins(userId, -amount);
         
         res.json({
             success: true,
@@ -30,7 +40,7 @@ router.post('/request', async (req, res) => {
     }
 });
 
-// Get payment history
+// Get payment history for user
 router.get('/history/:userId', async (req, res) => {
     const userId = req.params.userId;
     
@@ -43,6 +53,28 @@ router.get('/history/:userId', async (req, res) => {
 });
 
 // Database functions
+function getUser(userId) {
+    return new Promise((resolve, reject) => {
+        db.get('SELECT * FROM users WHERE telegram_id = ?', [userId], (err, row) => {
+            if (err) reject(err);
+            else resolve(row);
+        });
+    });
+}
+
+function updateUserCoins(userId, coins) {
+    return new Promise((resolve, reject) => {
+        db.run(
+            'UPDATE users SET coins = coins + ? WHERE telegram_id = ?',
+            [coins, userId],
+            (err) => {
+                if (err) reject(err);
+                else resolve();
+            }
+        );
+    });
+}
+
 function createPaymentRequest(userId, amount, binanceUid) {
     return new Promise((resolve, reject) => {
         db.run(
