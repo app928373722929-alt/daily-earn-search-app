@@ -1,7 +1,7 @@
 class DailyEarnApp {
     constructor() {
-        this.tg = window.Telegram.WebApp;
-        this.user = this.tg.initDataUnsafe?.user;
+        this.tg = window.Telegram?.WebApp;
+        this.user = this.tg?.initDataUnsafe?.user;
         this.userData = null;
         this.searchCount = 0;
         this.gameCount = 0;
@@ -9,8 +9,15 @@ class DailyEarnApp {
     }
 
     async init() {
+        if (!this.tg) {
+            console.error('Telegram WebApp not available');
+            return;
+        }
+
         this.tg.expand();
-        this.tg.enableClosingConfirmation();
+        if (this.tg.enableClosingConfirmation) {
+            this.tg.enableClosingConfirmation();
+        }
         
         if (this.user) {
             await this.loadUserData();
@@ -56,7 +63,7 @@ class DailyEarnApp {
     }
 
     async performSearch(query) {
-        if (!query.trim()) {
+        if (!query || !query.trim()) {
             this.showError('Please enter a search query');
             return;
         }
@@ -80,10 +87,10 @@ class DailyEarnApp {
                 this.searchCount++;
                 this.updateSearchProgress();
                 this.showSearchResults(result);
-                this.showCoinsAnimation(result.coinsEarned);
+                this.showCoinsAnimation(result.coinsEarned || 0);
                 await this.loadUserData();
             } else {
-                this.showError(result.error);
+                this.showError(result.error || 'Search failed');
             }
         } catch (error) {
             this.hideLoading();
@@ -92,25 +99,34 @@ class DailyEarnApp {
     }
 
     showSearchResults(result) {
+        const searchResultsElem = document.getElementById('searchResults');
+        const resultsModalElem = document.getElementById('resultsModal');
+        
+        if (!searchResultsElem || !resultsModalElem) return;
+
+        const results = result.results || [];
+        const coinsEarned = result.coinsEarned || 0;
+        const category = result.category || 'general';
+
         const resultsHTML = `
             <div class="search-success">
                 <h3>✅ Search Successful!</h3>
-                <p>You earned <strong>${result.coinsEarned} coins</strong> for ${result.category} search</p>
+                <p>You earned <strong>${coinsEarned} coins</strong> for ${category} search</p>
                 <div class="search-results">
-                    ${result.results.map(item => `
+                    ${results.length > 0 ? results.map(item => `
                         <div class="result-item">
-                            <strong>${item.title}</strong>
-                            <span class="value">${item.value}</span>
-                            <small>${item.detail}</small>
+                            <strong>${item.title || 'Result'}</strong>
+                            <span class="value">${item.value || ''}</span>
+                            <small>${item.detail || ''}</small>
                         </div>
-                    `).join('')}
+                    `).join('') : '<p>No results found</p>'}
                 </div>
                 <button class="btn-close" onclick="closeResults()">Continue Searching</button>
             </div>
         `;
 
-        document.getElementById('searchResults').innerHTML = resultsHTML;
-        document.getElementById('resultsModal').style.display = 'block';
+        searchResultsElem.innerHTML = resultsHTML;
+        resultsModalElem.style.display = 'block';
     }
 
     async loadPopularSearches() {
@@ -127,46 +143,63 @@ class DailyEarnApp {
     }
 
     updateUI() {
-        if (this.userData) {
-            document.getElementById('userCoins').textContent = this.userData.coins.toLocaleString();
-            document.getElementById('streakDays').textContent = this.userData.daily_streak || 0;
-            
-            // Update streak progress
-            const streakProgress = document.getElementById('streakProgress');
-            streakProgress.value = this.userData.daily_streak || 0;
-            
-            if (this.userData.daily_streak >= 3) {
-                document.getElementById('streakRewardBtn').disabled = false;
-            }
+        if (!this.userData) return;
+
+        const userCoinsElem = document.getElementById('userCoins');
+        const streakDaysElem = document.getElementById('streakDays');
+        const streakProgressElem = document.getElementById('streakProgress');
+        const streakRewardBtnElem = document.getElementById('streakRewardBtn');
+
+        if (userCoinsElem) {
+            userCoinsElem.textContent = (this.userData.coins || 0).toLocaleString();
+        }
+        if (streakDaysElem) {
+            streakDaysElem.textContent = this.userData.daily_streak || 0;
+        }
+        if (streakProgressElem) {
+            streakProgressElem.value = this.userData.daily_streak || 0;
+        }
+        if (streakRewardBtnElem && this.userData.daily_streak >= 3) {
+            streakRewardBtnElem.disabled = false;
         }
     }
 
     updateGameStats(stats) {
+        if (!stats || !Array.isArray(stats)) return;
+
         stats.forEach(stat => {
             if (stat.game_type === 'clicker') {
-                document.getElementById('clickerHighScore').textContent = stat.high_score || 0;
+                const elem = document.getElementById('clickerHighScore');
+                if (elem) elem.textContent = stat.high_score || 0;
             } else if (stat.game_type === 'typing') {
-                document.getElementById('typingHighScore').textContent = stat.high_score || 0;
+                const elem = document.getElementById('typingHighScore');
+                if (elem) elem.textContent = stat.high_score || 0;
             }
         });
     }
 
     updateSearchProgress() {
-        const progress = document.getElementById('searchProgress');
-        progress.value = this.searchCount;
+        const progressElem = document.getElementById('searchProgress');
+        const rewardBtnElem = document.getElementById('searchRewardBtn');
         
-        if (this.searchCount >= 5) {
-            document.getElementById('searchRewardBtn').disabled = false;
+        if (progressElem) {
+            progressElem.value = this.searchCount;
+        }
+        if (rewardBtnElem && this.searchCount >= 5) {
+            rewardBtnElem.disabled = false;
         }
     }
 
     updateGameProgress() {
         this.gameCount++;
-        const progress = document.getElementById('gameProgress');
-        progress.value = this.gameCount;
+        const progressElem = document.getElementById('gameProgress');
+        const rewardBtnElem = document.getElementById('gameRewardBtn');
         
-        if (this.gameCount >= 2) {
-            document.getElementById('gameRewardBtn').disabled = false;
+        if (progressElem) {
+            progressElem.value = this.gameCount;
+        }
+        if (rewardBtnElem && this.gameCount >= 2) {
+            rewardBtnElem.disabled = false;
         }
     }
 
@@ -178,7 +211,7 @@ class DailyEarnApp {
         };
 
         const reward = rewards[type];
-        if (!reward) return;
+        if (!reward || !this.user) return;
 
         try {
             const response = await fetch('/api/users/update-coins', {
@@ -195,6 +228,8 @@ class DailyEarnApp {
             if (result.success) {
                 this.showSuccess(reward.message + ` +${reward.coins} coins!`);
                 await this.loadUserData();
+            } else {
+                this.showError('Failed to claim reward');
             }
         } catch (error) {
             this.showError('Failed to claim reward');
@@ -207,40 +242,58 @@ class DailyEarnApp {
         animation.textContent = `+${coins} 🪙`;
         document.body.appendChild(animation);
 
-        setTimeout(() => animation.remove(), 2000);
+        setTimeout(() => {
+            if (animation.parentNode) {
+                animation.parentNode.removeChild(animation);
+            }
+        }, 2000);
     }
 
     showLoading(message) {
-        this.tg.showPopup({
-            title: '⏳',
-            message: message,
-            buttons: []
-        });
+        if (this.tg && this.tg.showPopup) {
+            this.tg.showPopup({
+                title: '⏳',
+                message: message,
+                buttons: []
+            });
+        }
     }
 
     hideLoading() {
-        this.tg.closePopup();
+        if (this.tg && this.tg.closePopup) {
+            this.tg.closePopup();
+        }
     }
 
     showSuccess(message) {
-        this.tg.showPopup({
-            title: '✅ Success',
-            message: message,
-            buttons: [{ type: 'default', text: 'OK' }]
-        });
+        if (this.tg && this.tg.showPopup) {
+            this.tg.showPopup({
+                title: '✅ Success',
+                message: message,
+                buttons: [{ type: 'default', text: 'OK' }]
+            });
+        } else {
+            alert(message);
+        }
     }
 
     showError(message) {
-        this.tg.showPopup({
-            title: '❌ Error',
-            message: message,
-            buttons: [{ type: 'default', text: 'OK' }]
-        });
+        if (this.tg && this.tg.showPopup) {
+            this.tg.showPopup({
+                title: '❌ Error',
+                message: message,
+                buttons: [{ type: 'default', text: 'OK' }]
+            });
+        } else {
+            alert(message);
+        }
     }
 
     setupDailyWelcome() {
+        if (!this.user || !this.tg || !this.tg.showPopup) return;
+
         const messages = [
-            `Welcome back, ${this.user.first_name}! Ready to earn?`,
+            `Welcome back, ${this.user.first_name || 'User'}! Ready to earn?`,
             "Daily bonuses are waiting for you!",
             "What would you like to search today?",
             "Complete missions and earn extra coins!"
@@ -258,12 +311,14 @@ class DailyEarnApp {
     }
 
     setupEventListeners() {
-        // Enter key for search
-        document.getElementById('searchInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                this.performSearch(e.target.value);
-            }
-        });
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.performSearch(e.target.value);
+                }
+            });
+        }
     }
 }
 
@@ -275,27 +330,42 @@ function handleKeyPress(event) {
 }
 
 function performSearch() {
-    const query = document.getElementById('searchInput').value;
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) return;
+    
+    const query = searchInput.value;
     if (window.app) {
         window.app.performSearch(query);
     }
 }
 
 function quickSearch(query) {
-    document.getElementById('searchInput').value = query;
-    performSearch();
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.value = query;
+        performSearch();
+    }
 }
 
 function closeResults() {
-    document.getElementById('resultsModal').style.display = 'none';
+    const resultsModal = document.getElementById('resultsModal');
+    if (resultsModal) {
+        resultsModal.style.display = 'none';
+    }
 }
 
 function openWithdrawal() {
-    document.getElementById('withdrawalModal').style.display = 'block';
+    const withdrawalModal = document.getElementById('withdrawalModal');
+    if (withdrawalModal) {
+        withdrawalModal.style.display = 'block';
+    }
 }
 
 function closeWithdrawal() {
-    document.getElementById('withdrawalModal').style.display = 'none';
+    const withdrawalModal = document.getElementById('withdrawalModal');
+    if (withdrawalModal) {
+        withdrawalModal.style.display = 'none';
+    }
 }
 
 function openService(service) {
@@ -305,6 +375,8 @@ function openService(service) {
 function showComingSoon() {
     if (window.app) {
         window.app.showError('This game is coming soon!');
+    } else {
+        alert('This game is coming soon!');
     }
 }
 
@@ -315,8 +387,13 @@ function claimReward(type) {
 }
 
 async function requestWithdrawal() {
-    const amount = parseInt(document.getElementById('withdrawAmount').value);
-    const uid = document.getElementById('binanceUid').value.trim();
+    const amountInput = document.getElementById('withdrawAmount');
+    const uidInput = document.getElementById('binanceUid');
+    
+    if (!amountInput || !uidInput) return;
+
+    const amount = parseInt(amountInput.value);
+    const uid = uidInput.value.trim();
 
     if (!amount || amount < 1000) {
         alert('Minimum withdrawal: 1000 coins ($1)');
@@ -354,9 +431,11 @@ async function requestWithdrawal() {
         if (result.success) {
             alert('Withdrawal request submitted! Admin will process it within 24 hours.');
             closeWithdrawal();
-            window.app.loadUserData();
+            if (window.app.loadUserData) {
+                window.app.loadUserData();
+            }
         } else {
-            alert('Error: ' + result.error);
+            alert('Error: ' + (result.error || 'Request failed'));
         }
     } catch (error) {
         alert('Network error. Please try again.');
