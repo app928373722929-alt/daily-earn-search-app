@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Earn & Search - Get Paid to Search!</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="user-info">
+                <h1>🔍 Daily Earn</h1>
+                <div class="balance">
+                    <span id="userCoins">0</span> coins
+                    <div class="streak">🔥 <span id="streakDays">0</span> days</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search Section -->
+        <section class="search-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="What do you want to search today?">
+                <button onclick="performSearch()">🔍 Search & Earn</button>
+            </div>
+            
+            <div class="quick-searches">
+                <h4>🔥 Popular Searches:</h4>
+                <div class="quick-search-tags">
+                    <span onclick="quickSearch('Bitcoin price today')">💰 Bitcoin Price</span>
+                    <span onclick="quickSearch('Weather in Dhaka')">🌤️ Dhaka Weather</span>
+                    <span onclick="quickSearch('Latest cricket scores')">🏏 Cricket Scores</span>
+                    <span onclick="quickSearch('Movie releases')">🎬 New Movies</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Daily Services -->
+        <section class="services-section">
+            <h3>🚀 Daily Services</h3>
+            <div class="services-grid">
+                <div class="service-card" onclick="openService('crypto')">
+                    <div class="service-icon">💰</div>
+                    <span>Crypto Prices</span>
+                    <small>Earn 3 coins</small>
+                </div>
+                <div class="service-card" onclick="openService('weather')">
+                    <div class="service-icon">🌤️</div>
+                    <span>Weather</span>
+                    <small>Earn 2 coins</small>
+                </div>
+                <div class="service-card" onclick="openService('news')">
+                    <div class="service-icon">📰</div>
+                    <span>News</span>
+                    <small>Earn 4 coins</small>
+                </div>
+                <div class="service-card" onclick="openService('sports')">
+                    <div class="service-icon">⚽</div>
+                    <span>Sports</span>
+                    <small>Earn 3 coins</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mini Games -->
+        <section class="games-section">
+            <h3>🎮 Play & Earn</h3>
+            <div class="games-grid">
+                <div class="game-card" onclick="startGame('clicker')">
+                    <h4>Click Master</h4>
+                    <p>1 coin per click</p>
+                    <div class="game-stats">Played: <span id="clickerPlays">0</span></div>
+                </div>
+                <div class="game-card" onclick="startGame('typing')">
+                    <h4>Typing Race</h4>
+                    <p>2 coins per word</p>
+                    <div class="game-stats">High score: <span id="typingScore">0</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Daily Challenges -->
+        <section class="challenges-section">
+            <h3>🏆 Daily Missions</h3>
+            <div class="challenges-list">
+                <div class="challenge">
+                    <span>🔍 Search 5 times</span>
+                    <progress value="0" max="5" id="searchProgress"></progress>
+                    <button onclick="claimReward('search')">Claim 25 coins</button>
+                </div>
+                <div class="challenge">
+                    <span>🎮 Play 2 games</span>
+                    <progress value="0" max="2" id="gameProgress"></progress>
+                    <button onclick="claimReward('games')">Claim 20 coins</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Withdrawal Section -->
+        <section class="withdrawal-section">
+            <button class="withdraw-btn" onclick="openWithdrawal()">
+                💰 Withdraw to Binance
+            </button>
+        </section>
+    </div>
+
+    <!-- Search Results Modal -->
+    <div id="resultsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeResults()">&times;</span>
+            <div id="searchResults"></div>
+        </div>
+    </div>
+
+    <!-- Withdrawal Modal -->
+    <div id="withdrawalModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeWithdrawal()">&times;</span>
+            <h3>💰 Withdraw Earnings</h3>
+            <div class="withdrawal-form">
+                <input type="number" id="withdrawAmount" placeholder="1000 coins minimum">
+                <input type="text" id="binanceUid" placeholder="Your Binance UID">
+                <button onclick="requestWithdrawal()">Request Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script src="games.js"></script>
+</body>
+</html>
