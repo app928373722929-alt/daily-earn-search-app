@@ -1,40 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const db = require('./db'); // সরাসরি ডাটাবেস ইম্পোর্ট
 
-// Database instance
-const db = require('../server').db;
-
-// Save game result
-router.post('/save', async (req, res) => {
-    const { userId, gameType, score, coinsEarned } = req.body;
-
-    try {
-        await saveGameResult(userId, gameType, score, coinsEarned);
-        await updateUserCoins(userId, coinsEarned);
-        
-        res.json({
-            success: true,
-            message: 'Game result saved successfully',
-            coinsEarned: coinsEarned
-        });
-    } catch (error) {
-        res.json({ success: false, error: error.message });
-    }
-});
-
-// Get user game statistics
-router.get('/stats/:userId', async (req, res) => {
-    const userId = req.params.userId;
-    
-    try {
-        const stats = await getGameStats(userId);
-        res.json({ success: true, stats: stats });
-    } catch (error) {
-        res.json({ success: false, error: error.message });
-    }
-});
-
-// Database functions
+// ডাটাবেস ফাংশনগুলো
 function saveGameResult(userId, gameType, score, coinsEarned) {
     return new Promise((resolve, reject) => {
         db.run(
@@ -52,7 +20,7 @@ function saveGameResult(userId, gameType, score, coinsEarned) {
 function updateUserCoins(userId, coins) {
     return new Promise((resolve, reject) => {
         db.run(
-            'UPDATE users SET coins = coins + ?, total_earned = total_earned + ? WHERE telegram_id = ?',
+            'UPDATE users SET balance = balance + ?, total_earnings = total_earnings + ? WHERE telegram_id = ?',
             [coins, coins, userId],
             (err) => {
                 if (err) reject(err);
@@ -76,5 +44,43 @@ function getGameStats(userId) {
         );
     });
 }
+
+// গেম রেজাল্ট সেভ করুন
+router.post('/save', async (req, res) => {
+    const { userId, gameType, score, coinsEarned } = req.body;
+
+    if (!userId || !gameType || score === undefined) {
+        return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+
+    try {
+        await saveGameResult(userId, gameType, score, coinsEarned || 0);
+        await updateUserCoins(userId, coinsEarned || 0);
+        
+        res.json({
+            success: true,
+            message: 'Game result saved successfully',
+            coinsEarned: coinsEarned || 0
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ইউজার গেম স্ট্যাটিস্টিক্স পান
+router.get('/stats/:userId', async (req, res) => {
+    const userId = req.params.userId;
+    
+    if (!userId) {
+        return res.status(400).json({ success: false, error: 'User ID is required' });
+    }
+    
+    try {
+        const stats = await getGameStats(userId);
+        res.json({ success: true, stats: stats });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 
 module.exports = router;
