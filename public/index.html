@@ -23,7 +23,7 @@
         <!-- Search Section -->
         <section class="search-section">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="What do you want to search today?">
+                <input type="text" id="searchInput" placeholder="What do you want to search today?" onkeypress="handleKeyPress(event)">
                 <button onclick="performSearch()">🔍 Search & Earn</button>
             </div>
             
@@ -34,6 +34,8 @@
                     <span onclick="quickSearch('Weather in Dhaka')">🌤️ Dhaka Weather</span>
                     <span onclick="quickSearch('Latest cricket scores')">🏏 Cricket Scores</span>
                     <span onclick="quickSearch('Movie releases')">🎬 New Movies</span>
+                    <span onclick="quickSearch('iPhone price Bangladesh')">📱 iPhone Price</span>
+                    <span onclick="quickSearch('Today news')">📰 Latest News</span>
                 </div>
             </div>
         </section>
@@ -72,12 +74,22 @@
                 <div class="game-card" onclick="startGame('clicker')">
                     <h4>Click Master</h4>
                     <p>1 coin per click</p>
-                    <div class="game-stats">Played: <span id="clickerPlays">0</span></div>
+                    <div class="game-stats">High Score: <span id="clickerHighScore">0</span></div>
                 </div>
                 <div class="game-card" onclick="startGame('typing')">
                     <h4>Typing Race</h4>
                     <p>2 coins per word</p>
-                    <div class="game-stats">High score: <span id="typingScore">0</span></div>
+                    <div class="game-stats">High Score: <span id="typingHighScore">0</span></div>
+                </div>
+                <div class="game-card" onclick="showComingSoon()">
+                    <h4>Memory Game</h4>
+                    <p>5 coins per match</p>
+                    <div class="game-stats">Coming Soon</div>
+                </div>
+                <div class="game-card" onclick="showComingSoon()">
+                    <h4>Math Quiz</h4>
+                    <p>3 coins per answer</p>
+                    <div class="game-stats">Coming Soon</div>
                 </div>
             </div>
         </section>
@@ -89,12 +101,17 @@
                 <div class="challenge">
                     <span>🔍 Search 5 times</span>
                     <progress value="0" max="5" id="searchProgress"></progress>
-                    <button onclick="claimReward('search')">Claim 25 coins</button>
+                    <button onclick="claimReward('search')" id="searchRewardBtn" disabled>Claim 25 coins</button>
                 </div>
                 <div class="challenge">
                     <span>🎮 Play 2 games</span>
                     <progress value="0" max="2" id="gameProgress"></progress>
-                    <button onclick="claimReward('games')">Claim 20 coins</button>
+                    <button onclick="claimReward('games')" id="gameRewardBtn" disabled>Claim 20 coins</button>
+                </div>
+                <div class="challenge">
+                    <span>🔥 3-day streak</span>
+                    <progress value="0" max="3" id="streakProgress"></progress>
+                    <button onclick="claimReward('streak')" id="streakRewardBtn" disabled>Claim 50 coins</button>
                 </div>
             </div>
         </section>
@@ -104,7 +121,11 @@
             <button class="withdraw-btn" onclick="openWithdrawal()">
                 💰 Withdraw to Binance
             </button>
+            <p class="withdraw-info">Minimum 1000 coins ($1) required</p>
         </section>
+
+        <!-- Game Container -->
+        <div id="gameContainer"></div>
     </div>
 
     <!-- Search Results Modal -->
@@ -121,9 +142,19 @@
             <span class="close" onclick="closeWithdrawal()">&times;</span>
             <h3>💰 Withdraw Earnings</h3>
             <div class="withdrawal-form">
-                <input type="number" id="withdrawAmount" placeholder="1000 coins minimum">
-                <input type="text" id="binanceUid" placeholder="Your Binance UID">
-                <button onclick="requestWithdrawal()">Request Payment</button>
+                <div class="form-group">
+                    <label>Amount (coins):</label>
+                    <input type="number" id="withdrawAmount" placeholder="1000" min="1000">
+                    <small>Minimum: 1000 coins ($1)</small>
+                </div>
+                <div class="form-group">
+                    <label>Your Binance UID:</label>
+                    <input type="text" id="binanceUid" placeholder="Enter your Binance UID">
+                </div>
+                <div class="form-actions">
+                    <button class="btn-cancel" onclick="closeWithdrawal()">Cancel</button>
+                    <button class="btn-confirm" onclick="requestWithdrawal()">Request Payment</button>
+                </div>
             </div>
         </div>
     </div>
